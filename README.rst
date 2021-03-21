@@ -22,6 +22,12 @@ pyhdfs-client
 
 A py4j based hdfs client for python for native hdfs CLI performance.
 
+Usage Example: 
+- set java_home and hadoop_home
+
+from pyhdfs_client.pyhdfs_client import HDFSClient
+hdfs_client = HDFSClient()
+hdfs_client.run(['-ls', '/folder1'])
 
 * Free software: MIT license
 * Documentation: https://pyhdfs-client.readthedocs.io.
