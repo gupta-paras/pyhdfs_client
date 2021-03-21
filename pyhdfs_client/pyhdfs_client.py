@@ -1,3 +1,4 @@
+"""Main module."""
 import os
 import re
 
@@ -93,8 +94,7 @@ class HDFSClient:
             err = f.read()
         return ret, out, err
 
+# set HADOOP_HOME and JAVA_HOME (C:\PROGRA~1 notation) in windows
 if __name__=='__main__':
-    os.environ['HADOOP_HOME'] = r'C:\bin\hadoop\hadoop-2.9.2'
-    os.environ['JAVA_HOME'] = r'C:\Progra~1\Java\jdk1.8.0_91'
     hdfs_client = HDFSClient()
     print(hdfs_client.run(['-ls', '/folder1']))
