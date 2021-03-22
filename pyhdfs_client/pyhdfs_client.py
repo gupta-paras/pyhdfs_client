@@ -2,6 +2,7 @@
 import os
 import re
 import time
+import sys
 
 from py4j.java_gateway import launch_gateway, JavaGateway, GatewayParameters, CallbackServerParameters, java_import
 
@@ -23,10 +24,19 @@ class HDFSClient:
     def __init__(self, **kwargs):
         HDFSClient.validate_environ('HADOOP_HOME')
         HDFSClient.validate_environ('JAVA_HOME')
+        
         self.classpath = HDFSClient.CLASSPATH.format(
             HADOOP_HOME=os.environ['HADOOP_HOME'], JAVA_HOME = os.environ['JAVA_HOME']
         )
-        self.classpath = re.sub('\s+', '', self.classpath)
+        
+        self.jarpath = HDFSClient.get_jar_path()
+        self.classpath = re.sub('\s+', '', self.classpath).replace('/', '\\') # removing spaces from class path
+        self.classpath = re.sub(r'[\\]+', r'\\', self.classpath) # removing multiple sequencial slashes
+
+        if not sys.platform.lower().startswith('win'): # updating classpath for non windows platforms
+            self.classpath = self.classpath.replace('\\', '/').replace(";", ":")
+            os.environ['TEMP'] = '/tmp'
+
         self.log_file_basepath = kwargs.get('log_file_basepath', os.path.join(
             os.environ.get('TEMP', '.'), 'pyhdfs_{}'.format(int(time.time() * 1000))))
         os.makedirs(self.log_file_basepath, exist_ok=True)
@@ -36,15 +46,31 @@ class HDFSClient:
         self.launch_hdfs_shell()
 
     @staticmethod
+    def get_jar_path():
+        if sys.platform.lower().startswith("win"):
+            return ""
+        search_dirs = ['/usr/share/py4j/', '/usr/local/share/py4j/']
+        for search_dir in search_dirs:
+            if os.path.exists(search_dir):
+                jars = [jar for jar in os.listdir(search_dir) if re.search('py4j.*\.jar', jar)]
+                if len(jars):
+                    return os.path.join(search_dir, jars[0])
+        return ""
+ 
+    @staticmethod
     def validate_environ(varname):
         if varname not in os.environ:
             raise Exception("Required environment variable: {varname} not set!".format(varname=varname))
 
     def update_hadoop_environ(self):
-        os.environ['HADOOP_CONF_DIR'] = os.path.join(os.environ['HADOOP_HOME'], r'\etc\hadoop')
-        os.environ['YARN_CONF_DIR'] = os.environ['HADOOP_HOME']
+        os.environ['HADOOP_CONF_DIR'] = os.path.join(os.environ['HADOOP_HOME'], r'etc\hadoop')
+        os.environ['YARN_CONF_DIR'] = os.environ['HADOOP_CONF_DIR']
         os.environ['HADOOP_PREFIX'] = os.environ['HADOOP_HOME']
-        os.environ['PATH'] = os.environ['PATH'] + ";" + os.path.join(os.environ['HADOOP_HOME'], r'\bin')
+        os.environ['PATH'] = os.environ['PATH'] + ";" + os.path.join(os.environ['HADOOP_HOME'], r'bin')
+        if not sys.platform.lower().startswith('win'):
+            os.environ['PATH'] = os.environ['PATH'].replace(";", ":").replace("\\", '/')
+            os.environ['HADOOP_CONF_DIR'] = os.environ['HADOOP_CONF_DIR'].replace(";", ":").replace("\\", '/')
+            os.environ['YARN_CONF_DIR'] = os.environ['YARN_CONF_DIR'].replace(";", ":").replace("\\", '/')
 
     def update_log_files(self):
         self.out_file = os.path.join(self.log_file_basepath, 'out.log')
