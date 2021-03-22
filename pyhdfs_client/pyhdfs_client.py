@@ -85,7 +85,8 @@ class HDFSClient:
             classpath=self.classpath,
             redirect_stderr=self.err,
             redirect_stdout=self.out,
-            die_on_exit=True
+            die_on_exit=True,
+            jarpath=self.jarpath
         )
         
         self.gateway = JavaGateway(
