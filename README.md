@@ -20,6 +20,7 @@
 >>> print(out)
 Found 1 items
 drwxr-xr-x   - gp supergroup          0 2021-03-21 01:10 /f1
+>>> hdfs_client.stop() # to terminate hdfs client
 ```
 
 ## Credits<hr>

@@ -101,7 +101,12 @@ class HDFSClient:
             err = f.read()
         return ret, out, err
 
+    def stop(self):
+        self.gateway.shutdown()
+        self.gateway.shutdown_callback_server()
+
 # set HADOOP_HOME and JAVA_HOME (C:\PROGRA~1 notation) in windows
 if __name__=='__main__':
     hdfs_client = HDFSClient()
-    print(hdfs_client.run(['-ls', '/folder1']))
+    print(hdfs_client.run(['-ls', '/']))
+    hdfs_client.stop()
