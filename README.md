@@ -20,7 +20,7 @@ Native hdfs client offers much better performance than webhdfs clients. However 
 
 ## Installation
 ```
-pip install pyhdfs_client
+pip install pyhdfs-client
 ```
  Requirements:  hadoop binaries and py4j installed<br><br>
 ## Sample Usage<hr>
