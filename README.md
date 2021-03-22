@@ -9,6 +9,9 @@
 - No extra overhead to start HDFS client on every call
 - Native HDFS client performance
 
+### New in 0.1.2 <hr>
+- Added Support for UNIX
+
 ## Sample Usage<hr>
 ```
 >>> from pyhdfs_client.pyhdfs_client import HDFSClient
