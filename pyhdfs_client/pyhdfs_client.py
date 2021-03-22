@@ -11,7 +11,8 @@ class HDFSClient:
         {HADOOP_HOME}\\share\\hadoop\\hdfs;
         {HADOOP_HOME}\\share\\hadoop\\hdfs\\lib\\*;
         {HADOOP_HOME}\\share\\hadoop\\hdfs\\*;
-        {HADOOP_HOME}\\share\\hadoop\\yarn;{HADOOP_HOME}\\share\\hadoop\\yarn\\lib\\*;
+        {HADOOP_HOME}\\share\\hadoop\\yarn;
+        {HADOOP_HOME}\\share\\hadoop\\yarn\\lib\\*;
         {HADOOP_HOME}\\share\\hadoop\\yarn\\*;
         {HADOOP_HOME}\\share\\hadoop\\mapreduce\\lib\\*;
         {HADOOP_HOME}\\share\\hadoop\\mapreduce\\*;
@@ -19,6 +20,8 @@ class HDFSClient:
     """
 
     def __init__(self, **kwargs):
+        HDFSClient.validate_environ('HADOOP_HOME')
+        HDFSClient.validate_environ('JAVA_HOME')
         self.classpath = HDFSClient.CLASSPATH.format(
             HADOOP_HOME=os.environ['HADOOP_HOME'], JAVA_HOME = os.environ['JAVA_HOME']
         )
@@ -28,6 +31,11 @@ class HDFSClient:
         self.update_hadoop_environ()
         self.launch_gateway()
         self.launch_hdfs_shell()
+
+    @staticmethod
+    def validate_environ(varname):
+        if varname not in os.environ:
+            raise Exception("Required environment variable: {varname} not set!".format(varname=varname))
 
     def update_hadoop_environ(self):
         os.environ['HADOOP_CONF_DIR'] = os.path.join(os.environ['HADOOP_HOME'], r'\etc\hadoop')
@@ -84,9 +92,8 @@ class HDFSClient:
 
         print_stream = self.gateway.jvm.java.io.PrintStream(self.out_file)
         self.gateway.jvm.System.setOut(print_stream)
-        ret = self.fsshell.run(hdfs_client.get_java_array(cmd))
+        ret = self.fsshell.run(self.get_java_array(cmd))
         print_stream.close()
-
 
         with open(self.out_file) as f:
             out = f.read()
