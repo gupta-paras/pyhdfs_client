@@ -1,6 +1,7 @@
 """Main module."""
 import os
 import re
+import time
 
 from py4j.java_gateway import launch_gateway, JavaGateway, GatewayParameters, CallbackServerParameters, java_import
 
@@ -26,7 +27,9 @@ class HDFSClient:
             HADOOP_HOME=os.environ['HADOOP_HOME'], JAVA_HOME = os.environ['JAVA_HOME']
         )
         self.classpath = re.sub('\s+', '', self.classpath)
-        self.log_file_basepath = kwargs.get('log_file_basepath', '.')
+        self.log_file_basepath = kwargs.get('log_file_basepath', os.path.join(
+            os.environ.get('TEMP', '.'), 'pyhdfs_{}'.format(int(time.time() * 1000))))
+        os.makedirs(self.log_file_basepath, exist_ok=True)
         
         self.update_hadoop_environ()
         self.launch_gateway()
