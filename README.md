@@ -1,15 +1,12 @@
 # pyhdfs-client
 
-![https://pypi.python.org/pypi/pyhdfs_client](https://img.shields.io/pypi/v/pyhdfs_client.svg)
-![https://pypi.python.org/pypi/pyhdfs_client](https://img.shields.io/travis/gupta-paras/pyhdfs_client.svg)
-![https://pyhdfs-client.readthedocs.io/en/latest/?version=latest](https://readthedocs.org/projects/pyhdfs-client/badge/?version=latest)
-![https://pyup.io/repos/github/gupta-paras/pyhdfs_client/](https://pyup.io/repos/github/gupta-paras/pyhdfs_client/shield.svg)
-
+[![https://pypi.python.org/pypi/pyhdfs_client](https://img.shields.io/pypi/v/pyhdfs_client.svg)](https://pypi.org/project/pyhdfs-client)
 ### A py4j based hdfs client for python providing native hdfs CLI performance.
 <br>
 
 ## Features<hr>
 - Easy to integrate with python applications
+- No extra overhead to start HDFS client on every call
 - Native HDFS client performance
 
 ## Sample Usage<hr>
