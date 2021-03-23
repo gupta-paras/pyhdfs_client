@@ -5,6 +5,7 @@ import time
 import sys
 import shutil
 import psutil
+from socket import socket
 
 from py4j.java_gateway import launch_gateway, JavaGateway, GatewayParameters, CallbackServerParameters, java_import
 
@@ -83,17 +84,28 @@ class HDFSClient:
     def launch_gateway(self):
 
         self.update_log_files()
+
+        java_sock = socket()
+        java_sock.bind(('', 0))
+        java_port = java_sock.getsockname()[1]
+
+        python_sock = socket()
+        python_sock.bind(('', 0))
+        python_port = python_sock.getsockname()[1]
+        print(java_port, python_port)
+
         port = launch_gateway(
             classpath=self.classpath,
             redirect_stderr=self.err,
             redirect_stdout=self.out,
             die_on_exit=True,
-            jarpath=self.jarpath
+            jarpath=self.jarpath,
+            port=java_port
         )
         
         self.gateway = JavaGateway(
             gateway_parameters=GatewayParameters(port=port),
-            callback_server_parameters=CallbackServerParameters(port=0)
+            callback_server_parameters=CallbackServerParameters(port=python_port)
         )
 
         python_port = self.gateway.get_callback_server().get_listening_port()
