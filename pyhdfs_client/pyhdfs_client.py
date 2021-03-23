@@ -52,7 +52,7 @@ class HDFSClient:
     def get_jar_path():
         if sys.platform.lower().startswith("win"):
             return ""
-        search_dirs = ['/usr/share/py4j/', '/usr/local/share/py4j/']
+        search_dirs = ['/usr/local/share/py4j/', '/usr/share/py4j/']
         for search_dir in search_dirs:
             if os.path.exists(search_dir):
                 jars = [jar for jar in os.listdir(search_dir) if re.search('py4j.*\.jar', jar)]
@@ -92,7 +92,9 @@ class HDFSClient:
         python_sock = socket()
         python_sock.bind(('', 0))
         python_port = python_sock.getsockname()[1]
-        print(java_port, python_port)
+        
+        java_sock.close()
+        python_sock.close()
 
         port = launch_gateway(
             classpath=self.classpath,
@@ -106,7 +108,7 @@ class HDFSClient:
         self.gateway = JavaGateway(
             gateway_parameters=GatewayParameters(port=port),
             callback_server_parameters=CallbackServerParameters(port=python_port)
-        )
+        ) 
 
         python_port = self.gateway.get_callback_server().get_listening_port()
 

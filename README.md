@@ -16,6 +16,14 @@ Native hdfs client offers much better performance than webhdfs clients. However 
 - Provide native hadoop client performance without any overhead
 - Support both UNIX and Windows<br><br>
 
+## Whats new in 0.1.3?
+- Multiple instances of HDFS client enabled.
+- [fix] Temporary folder deletion
+- [fix] Java process shutdown issues on UNIX
+
+
+<br>
+
 ## Installation
 ```
 pip install pyhdfs-client
