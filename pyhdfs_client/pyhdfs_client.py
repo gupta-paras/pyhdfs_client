@@ -83,15 +83,13 @@ class HDFSClient:
     def launch_gateway(self):
 
         self.update_log_files()
-        port, proc = launch_gateway(
+        port = launch_gateway(
             classpath=self.classpath,
             redirect_stderr=self.err,
             redirect_stdout=self.out,
             die_on_exit=True,
-            jarpath=self.jarpath,
-            return_proc=True
+            jarpath=self.jarpath
         )
-        self.java_pid = proc.pid
         
         self.gateway = JavaGateway(
             gateway_parameters=GatewayParameters(port=port),
@@ -104,6 +102,9 @@ class HDFSClient:
             self.gateway.java_gateway_server.getCallbackClient().getAddress(),
             python_port
         )
+
+        process_name = self.gateway.jvm.java.lang.management.ManagementFactory.getRuntimeMXBean().getName()
+        self.java_pid = int(process_name.split('@')[0])
 
     def launch_hdfs_shell(self):
         java_import(self.gateway.jvm, 'org.apache.hadoop.fs.FsShell')
