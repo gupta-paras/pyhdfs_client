@@ -3,6 +3,8 @@ import os
 import re
 import time
 import sys
+import shutil
+import psutil
 
 from py4j.java_gateway import launch_gateway, JavaGateway, GatewayParameters, CallbackServerParameters, java_import
 
@@ -81,13 +83,15 @@ class HDFSClient:
     def launch_gateway(self):
 
         self.update_log_files()
-        port = launch_gateway(
+        port, proc = launch_gateway(
             classpath=self.classpath,
             redirect_stderr=self.err,
             redirect_stdout=self.out,
             die_on_exit=True,
-            jarpath=self.jarpath
+            jarpath=self.jarpath,
+            return_proc=True
         )
+        self.java_pid = proc.pid
         
         self.gateway = JavaGateway(
             gateway_parameters=GatewayParameters(port=port),
@@ -134,6 +138,17 @@ class HDFSClient:
     def stop(self):
         self.gateway.shutdown()
         self.gateway.shutdown_callback_server()
+        
+        # wait for child process to exit
+        os.kill(self.java_pid, 9)
+        while psutil.pid_exists(self.java_pid):
+            print("waiting for java process to terminate...")
+            time.sleep(1)
+        self.err.close()
+        self.out.close()
+
+        print("removing temp directory...",self.log_file_basepath)
+        shutil.rmtree(self.log_file_basepath)
 
 # set HADOOP_HOME and JAVA_HOME (C:\PROGRA~1 notation) in windows
 if __name__=='__main__':
