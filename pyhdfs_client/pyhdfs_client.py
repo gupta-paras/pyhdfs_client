@@ -24,10 +24,10 @@ class HDFSClient:
         {JAVA_HOME}\\*
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, load_local=False , **kwargs):
         HDFSClient.validate_environ('HADOOP_HOME')
         HDFSClient.validate_environ('JAVA_HOME')
-        
+        self.load_local = load_local
         self.classpath = HDFSClient.CLASSPATH.format(
             HADOOP_HOME=os.environ['HADOOP_HOME'], JAVA_HOME = os.environ['JAVA_HOME']
         )
@@ -66,9 +66,12 @@ class HDFSClient:
             raise Exception("Required environment variable: {varname} not set!".format(varname=varname))
 
     def update_hadoop_environ(self):
-        os.environ['HADOOP_CONF_DIR'] = os.path.join(os.environ['HADOOP_HOME'], r'etc\hadoop')
-        os.environ['YARN_CONF_DIR'] = os.environ['HADOOP_CONF_DIR']
-        os.environ['HADOOP_PREFIX'] = os.environ['HADOOP_HOME']
+        if not 'HADOOP_CONF_DIR' in os.environ:
+            os.environ['HADOOP_CONF_DIR'] = os.path.join(os.environ['HADOOP_HOME'], r'etc\hadoop')
+        if not 'YARN_CONF_DIR' in os.environ:
+            os.environ['YARN_CONF_DIR'] = os.environ['HADOOP_CONF_DIR']
+        if not 'HADOOP_PREFIX' in os.environ:
+            os.environ['HADOOP_PREFIX'] = os.environ['HADOOP_HOME']
         os.environ['PATH'] = os.environ['PATH'] + ";" + os.path.join(os.environ['HADOOP_HOME'], r'bin')
         if not sys.platform.lower().startswith('win'):
             os.environ['PATH'] = os.environ['PATH'].replace(";", ":").replace("\\", '/')
@@ -123,10 +126,18 @@ class HDFSClient:
     def launch_hdfs_shell(self):
         java_import(self.gateway.jvm, 'org.apache.hadoop.fs.FsShell')
         java_import(self.gateway.jvm, 'org.apache.hadoop.conf.Configuration')
+        java_import(self.gateway.jvm, 'org.apache.hadoop.fs.Path')
         self.fsshell = self.gateway.jvm.FsShell()
-        conf = self.gateway.jvm.Configuration()
-        conf.setQuietMode(False)
+        if self.load_local:
+            conf = self.gateway.jvm.Configuration(False)
+            conf.addResource(self.gateway.jvm.Path("{}/hdfs-site.xml".format(os.environ['HADOOP_CONF_DIR'])))
+            conf.addResource(self.gateway.jvm.Path("{}/yarn-site.xml".format(os.environ['HADOOP_CONF_DIR'])))
+            conf.addResource(self.gateway.jvm.Path("{}/core-site.xml".format(os.environ['HADOOP_CONF_DIR'])))
+        else:
+            conf = self.gateway.jvm.Configuration()
+
         self.fsshell.setConf(conf)
+        print(conf.toString())
 
     def get_java_array(self, py_list):
         java_list = self.gateway.new_array(self.gateway.jvm.java.lang.String,len(py_list))
